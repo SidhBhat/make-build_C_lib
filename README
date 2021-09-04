@@ -1,4 +1,4 @@
-This Makefile builds static libraries from c files in any directory inside 'current directory' if the name of the directory is not the value of variables 'buildir' or 'libtardir'.
+This Makefile builds shared libraries from c files in any directory inside 'current directory'.
 The name of the library is the name of the directory consiting of the c files.
 Each directory repesents a library.
 
@@ -15,12 +15,12 @@ This would represent the structure:
 	|	|-<directories (named after the name of library to build)>*
 	|	|	|-<c object files>*
 	|	|
-	|	|-<library target directory>
-	|	|	|-<static libraries files (named based on directories)>*
+	|	|-<shared libraries files (named based on directories)>*
+	|	|-<executable (prog_name)>
 	|
 	|-<main.c>
 	|-<Makefile>
-	|-<helper scripts>
+	|-<helper scripts>*
 
 note: * at the end signifies more than one.
 
@@ -30,8 +30,6 @@ To gain additional control over build proccess the following variables can be se
 CC		(defualt 'gcc')
 CLIBS		(defualt no value)
 CFLAGS		(defualt '-g -O -Wall')
-AR		(defualt 'ar')
-ARFLAGS		(defualt 'crs')
 #====Install configuration====#
 prefix		(/usr/local)
 DESTDIR		(defualt no value)
@@ -44,7 +42,4 @@ INSTALL
 INTALL_PROGRAM
 INSTALL_DATA
 buildir
-libdirname
 ...etc
-
-
