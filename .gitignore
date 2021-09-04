@@ -1,0 +1,18 @@
+#build files
+*.[oa]
+*.out
+#build directory
+build/
+#subdirectories of subdirectories of source
+/*/**/
+# cfiles directly in source
+/*.c
+!/main.c
+
+#ignore the version log
+/versionlog.txt
+
+#generated config files
+/**/*.mk
+#generated script files
+/makegen.sh

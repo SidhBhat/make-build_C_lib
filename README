@@ -1,0 +1,50 @@
+This Makefile builds static libraries from c files in any directory inside 'current directory' if the name of the directory is not the value of variables 'buildir' or 'libtardir'.
+The name of the library is the name of the directory consiting of the c files.
+Each directory repesents a library.
+
+The file "main.c" in 'current directory' is used to create a executable linked with the built library to test it.
+
+This would represent the structure:
+==========
+<current directory>
+	|
+	|-<directories (named after the name of library to build)>*
+	|	|-<cfiles>*
+	|
+	|-<buildir>
+	|	|-<directories (named after the name of library to build)>*
+	|	|	|-<c object files>*
+	|	|
+	|	|-<library target directory>
+	|	|	|-<static libraries files (named based on directories)>*
+	|
+	|-<main.c>
+	|-<Makefile>
+	|-<helper scripts>
+
+note: * at the end signifies more than one.
+
+To gain additional control over build proccess the following variables can be set from commandline:
+
+#====Compiler flags====#
+CC		(defualt 'gcc')
+CLIBS		(defualt no value)
+CFLAGS		(defualt '-g -O -Wall')
+AR		(defualt 'ar')
+ARFLAGS		(defualt 'crs')
+#====Install configuration====#
+prefix		(/usr/local)
+DESTDIR		(defualt no value)
+#====Program name====#
+prog_name	(defualt 'main.out')
+#====================#
+
+The following variables are NOT meant to be set from commandline (they have other implications):
+INSTALL
+INTALL_PROGRAM
+INSTALL_DATA
+buildir
+libdirname
+...etc
+
+
