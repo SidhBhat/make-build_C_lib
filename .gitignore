@@ -4,15 +4,13 @@
 #build directory
 build/
 #subdirectories of subdirectories of source
-/*/**/
+/src/*/**/
 # cfiles directly in source
-/*.c
-!/main.c
+/src/*.c
+!/src/main.c
 
 #ignore the version log
 /versionlog.txt
 
 #generated config files
-/**/*.mk
-#generated script files
-/makegen.sh
+/src/**/*.mk

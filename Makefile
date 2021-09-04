@@ -1,117 +1,73 @@
 #!/usr/bin/make -f
 # Set environment variables
+
+# this makefile follows the below conventions for variables denoting files and directories
+# all directory names must end with a terminal '/' character
+# file names never end in terminal '/' character
+
+
 #===================================================
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 #===================================================
 # Compile commands
-#===================================================S
+#===================================================
 CC       = gcc
 CLIBS    =
--include libs.mk
 CFLAGS   = -g -O -Wall
 AR       = ar
 ARFLAGS  = crs
 #===================================================
 # Build Directories
 #===================================================
-srcdir     =
-# srcdir has no effect!
-buildir    = build
+override srcdir     = src/
+override buildir    = build/
+#libtardir and libdirname has no effect!
 libdirname = libs
-libtardir  = $(buildir)/$(libdirname)
+libtardir  = $(buildir)$(libdirname)/
 #===================================================
 # Install directories
 #===================================================
-prefix      = /usr/local
+prefix      = /usr/local/
 exec_prefix = $(prefix)
-bindir      = $(exec_prefix)/bin
-datarootdir = $(prefix)/share
+bindir      = $(exec_prefix)bin/
+datarootdir = $(prefix)share/
 datadir     = $(datarootdir)
-libdir      = $(prefix)/lib
+libdir      = $(prefix)lib/
 DESTDIR     =
 #===================================================
 prog_name = main.out
 #===================================================
-INSTALL         = install -D -p
-INSTALL_PROGRAM = $(INSTALL) -m 755
-INSTALL_DATA     = $(INSTALL) -m 644
+override INSTALL         = install -D -p
+override INSTALL_PROGRAM = $(INSTALL) -m 755
+override INSTALL_DATA     = $(INSTALL) -m 644
 #===================================================
 # Source and target objects
 #===================================================
-DIRS    = $(sort $(dir $(SRCS)))
-SRCS    = $(filter-out $(subst $(buildir)/,,$(libtardir))/%.c,$(wildcard */*.c))
-OBJS    = $(patsubst %.c,%.o,$(addprefix $(buildir)/,$(SRCS)))
-MKS     = $(patsubst %.c,%.mk,$(addprefix $(buildir)/,$(SRCS)))
-LIBS    = $(addprefix $(libtardir)/,$(addsuffix .a,$(addprefix lib,$(subst /,,$(DIRS)))))
-LIBDEPMK = $(addsuffix libs.mk,$(DIRS))
--include $(LIBDEPMK)
+SRCS = $(wildcard $(srcdir)*/*.c)
+DIRS = $(addprefix $(buildir),$(subst $(srcdir),,$(SRCDIRS)))
+SRCDIRS = $(sort $(dir $(SRCS)))
+OBJS = $(patsubst %.c,%.o,$(addprefix $(buildir),$(subst $(srcdir),,$(SRCS))))
+MKS  = $(patsubst %.c,%.mk,$(addprefix $(buildir),$(subst $(srcdir),,$(SRCS))))
+LIBS = $(addprefix $(buildir),$(addsuffix .a,$(addprefix lib,$(subst /,,$(subst $(buildir),,$(DIRS))))))
+LIBCONFS = $(addsuffix lib-dep-conf.mk,$(SRCDIRS))
+-include $(LIBCONFS)
 #=====================================================
 
-build: $(OBJS)
-.PHONY: build
-
-test: $(prog_name)
-.PHONY: test
-
-install: build
-	@for file in $(addsuffix .a,$(addprefix $(DESTDIR)$(libdir)/lib,$(subst /,,$(DIRS)))); do \
-		[ -f "$$file" ] && { \
-			echo -e "\e[35mWarning\e[0m: File already exists at \"$$file\"..."; \
-			echo "Defualt behavoir is not to overwrite"; \
-		} || { \
-			echo "Installing \"$$file\"..."; \
-			$(INSTALL_DATA) $(libtardir)/$${file$(hash)$(hash)*/} -t $(DESTDIR)$(libdir); \
-			ranlib "$$file"; \
-		}; \
-	done
-.PHONY: install
+build: $(LIBS)
+.PHONY:build
 
 debug:
-	@echo -e "\e[35mDirectories \e[0m    : $(DIRS)"
-	@echo -e "\e[35mSource Files\e[0m    : $(SRCS)"
-	@echo -e "\e[35mMake Files\e[0m      : $(MKS)"
-	@echo -e "\e[35mObject Files\e[0m    : $(OBJS)"
-	@echo -e "\e[35mLibrary Files\e[0m   : $(LIBS)"
-	@echo -e "\e[35mDependancy files\e[0m: $(LIBDEPMK)"
-	@echo -e "\e[35mCLIBS = \e[0m: $(if $(CLIBS), $(CLIBS) $(sort $(CLIBS_DEP)), -L./$(libtardir) $(addprefix -l,$(subst /,,$(DIRS))) $(sort $(CLIBS_DEP)))"
-.PHONY: debug
-
-#=================================Build Instructions================================
-
-$(MKS): $(buildir)/%.mk : %.c makegen.sh
-	@mkdir -p "$(@D)" "$(libtardir)"
-	@echo -e "$(hash)!/usr/bin/make -f" > $@
-	@./makegen.sh "$<" "$(CC) $(CFLAGS) -c \$$< -o \$$@\n\t$(AR) $(ARFLAGS) $(libtardir)/lib$(subst /,,$(dir $*)).a \$$@ $(if $(CLIBS_$(subst /,,$(dir $*))),-l\"$(CLIBS_$(subst /,,$(dir $*)))\",)" >> $@
-	@sed -i '2s/^/$(subst /,\/,$(@D)/)/' $@
-	@echo "Creating make file... \"$@\""
-
-$(OBJS): %.o : %.mk
-	@mkdir -p "$(@D)"
-	@$(MAKE) -C "$(CURDIR)" -f $< $(MAKEFLAGS)
-
-$(prog_name): main.c $(OBJS)
-	$(CC) $(CFLAGS) $< $(if $(CLIBS), $(CLIBS) $(sort $(CLIBS_DEP)), -L./$(libtardir) $(addprefix -l,$(subst /,,$(DIRS))) $(sort $(CLIBS_DEP))) -o $@
-
-#===================================================================================
-
-uninstall:
-	rm -f $(addsuffix .a,$(addprefix $(DESTDIR)$(libdir)/lib,$(subst /,,$(DIRS))))
-.PHONY: uninstall
-
-clean:
-	rm -rf ./build
-	rm -f ./"$(prog_name)"
-	@rm -f ./main.out
-.PHONY: clean
-
-clean-all: clean
-	rm -f ./makegen.sh
-.PHONY: clean-all
-
-deep-clean: clean-all remove-link-file remove-dependancylib-files
-.PHONY: deep-clean
+	@echo -e "\e[35mBuild Directories \e[0m: $(DIRS)"
+	@echo -e "\e[35mSource Directories\e[0m: $(SRCDIRS)"
+	@echo -e "\e[35mLibdepconf Files  \e[0m: $(LIBCONFS)"
+	@echo -e "\e[35mBuild Files       \e[0m: $(LIBS)"
+	@echo    "#-------------------------------------------#"
+	@echo -e "\e[35mSource Files     \e[0m: $(SRCS)"
+	@echo -e "\e[35mMake Files       \e[0m: $(MKS)"
+	@echo -e "\e[35mObject Files     \e[0m: $(OBJS)"
+.PHONY:debug
 
 help:
 	@echo "The follwing targets may be given..."
@@ -121,56 +77,89 @@ help:
 	@echo -e "\t...uninstall"
 	@echo -e "\t...clean"
 	@echo -e "\t...clean-all"
-	@echo -e "\t...deep-clean"
 	@echo "Other options"
 	@echo -e "\t...debug"
 	@echo -e "\t...help"
-	@echo -e "\t...remove-link-file"
-	@echo -e "\t...generate-link-file"
-	@echo -e "\t...remove-dependancylib-files"
-	@echo -e "\t...generate-dependancylib-files"
+	@echo -e "\t...generate-config-file"
+	@echo -e "\t...remove-config-file"
 .PHONY: help
 
+test: $(buildir)$(prog_name)
+.PHONY:test
+
+build-obj: $(OBJS)
+.PHONY:build-obj
+
+-include $(srcdir)libconfig.mk
+#=====================================================
+
+$(buildir)$(prog_name) : build $(srcdir)main.c
+	$(CC) $(CFLAGS) -o $@ $(INCLUDES) $(srcdir)main.c $(if $(CLIBS), $(CLIBS) $(sort $(CLIBS_DEP)), -L./$(buildir) $(addprefix -l,$(patsubst $(buildir)lib%.a,%,$(LIBS))) $(sort $(CLIBS_DEP)))
+
+$(buildir)%.mk : $(srcdir)%.c
+	@mkdir -p $(@D)
+	@$(CC) -M $< | awk '{ if(/^$(subst .mk,,$(@F))/) { printf("%s%s\n","$(@D)/",$$0) } else { print $$0 } } END { printf("\t$(CC) $(CFLAGS) $(INCLUDES_$(subst /,,$(dir $*))) -c -o $(buildir)$*.o $<\n")}' > $@
+	@echo "Creating Makefile \\"$@\\"..."
+
+.SECONDARY:$(MKS)
+
+%.o: %.mk
+	@mkdir -p $(@D)
+	$(MAKE) $(MAKEFLAGS) -C "$(CURDIR)" -f $<
+	@touch $(@D)/timestamp
+
+lib%.a: %/timestamp | $(buildir)
+	$(AR) $(ARFLAGS) $@ $(filter $*/%.o,$(OBJS)) $(if $(CLIBS_$(notdir $*)),-l"$(strip $(CLIBS_$(notdir $*)))")
+
+%/timestamp: $(buildir) ;
+
+.SECONDARY: $(addsuffix timestamp,$(DIRS))
+
+$(buildir): build-obj ;
+
+#=====================================================
+
 hash = \#
-makegen.sh:
-	@echo -e "$(hash)!/bin/bash"\
-	"\n$(hash) Generated by makefile, DO NOT EDIT!"\
-	"\n[ -f \"\$$1\" ] && {"\
-	"\n\tgcc -M \"\$$1\""\
-	"\n\techo -e \"\\\\t\$$2\""\
-	"\n\texit 0"\
-	"\n} || {"\
-	"\n\texit 1"\
-	"\n}" >> makegen.sh
-	@chmod u+x,g+x makegen.sh
-	@echo "srcipt: makegen.sh generated."
 
-generate-link-file:
-	@[ -f "./main.c" ] && { \
-		echo "$(hash)!/usr/bin/make -f" > ./libs.mk; \
-		echo "$(hash) Make config file for linker options, do not rename." >> ./libs.mk; \
-		echo "$(hash) The value of the variable must be CLIBS for it to be read by the makefile." >> ./libs.mk; \
-		echo "CLIBS = -L./$(libtardir) $(addprefix -l,$(subst /,,$(DIRS))) $(sort $(CLIBS_DEP))" >> ./libs.mk; \
-	};
-.PHONY: generate-link-file
+clean:
+	rm -rf $(buildir)
+.PHONY:clean
 
-generate-dependancylib-files:
-	@for dir in $(DIRS); do \
-		[ -d "$$dir" ] && { \
-			dir=$${dir//\//}; \
-			echo "$(hash)!/usr/bin/make -f" > "./$$dir/libs.mk"; \
-			echo "$(hash) Make config file for linker options, do not rename." >> "./$$dir/libs.mk"; \
-			echo "$(hash) The value of the variable must be CLIBS_<libname>, where the libname is the stem of lib*.a, for it to be read by the makefile." >> "$$dir/libs.mk"; \
-			echo "CLIBS_$$dir =" >> "$$dir/libs.mk"; \
-			echo -e "CLIBS_DEP += \$$(filter-out \$$(CLIBS),\$$(CLIBS_$$dir))\n" >> "$$dir/libs.mk"; \
-		}; \
+clean-all:clean remove-config-files
+.PHONY:clean-all
+
+generate-config-files: generate-libdependancy-config-files generate-testlibconf-file
+.PHONY:generate-config-files
+
+remove-config-files: remove-libdependancy-config-files remove-testlibconf-file
+.PHONY:remove-config-files
+
+generate-testlibconf-file:
+	@echo -e "$(hash)!/usr/bin/make -f"\
+	"\n$(hash) Make config file for linker options, do not rename."\
+	"\n$(hash) The value of the variable must be LIBS_<libname>, where the libname is the stem of lib*.a, for it to be read by the makefile."\
+	"\nCLIBS = -L./$(buildir) $(addprefix -l,$(patsubst $(buildir)lib%.a,%,$(LIBS)))"\
+	"\nINCLUDES =" > "$(srcdir)libconfig.mk"
+.PHONY:generate-testlibconf-file
+
+remove-testlibconf-file:
+	rm -f $(srcdir)libconfig.mk
+.PHONY:generate-testlibconf-file
+
+generate-libdependancy-config-files:
+	@for file in $(LIBCONFS); do \
+		stem="$${file%/*}" ; \
+		stem="$${stem//$(srcdir)/}" ; \
+		stem="$${stem//\//}" ; \
+		echo -e "$(hash)!/usr/bin/make -f"\
+		"\n$(hash) Make config file for linker options, do not rename."\
+		"\n$(hash) The value of the variable must be LIBS_<libname>, where the libname is the stem of lib*.a, for it to be read by the makefile."\
+		"\nCLIBS_$${stem} ="\
+		"\nINCLUDES_$${stem} ="\
+		"\nCLIBS_DEP += \$$(filter-out \$$(CLIBS),\$$(CLIBS_$${stem}))\n" > "$$file"; \
 	done
-.PHONY: generate-dependancylib-files
+.PHONY:generate-libdependancy-config-files
 
-remove-link-file:
-	rm -f ./libs.mk
-.PHONY: remove-link-file
-
-remove-dependancylib-files:
-	rm -f $(LIBDEPMK)
-.PHONY: remove-dependancylib-files
+remove-libdependancy-config-files:
+	rm -f $(LIBCONFS)
+.PHONY:remove-libdependancy-config-files
