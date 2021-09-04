@@ -15,7 +15,7 @@ This would represent the structure:
 	|	|	|-<C files>*
 	|	|	|-<Config file (LIBCONFIGFILE)>
 	|	|
-	|	|-<amin.c-files>
+	|	|-<main.c-file>
 	|	|-<Config file (MAINCONFIG)>
 	|
 	|-<Build Directory>
