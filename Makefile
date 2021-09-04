@@ -58,6 +58,8 @@ LIBCONFS = $(addsuffix lib-dep-conf.mk,$(SRCDIRS))
 build: $(LIBS)
 .PHONY:build
 
+.DEFUALT_GOAL:build
+
 debug:
 	@echo -e "\e[35mBuild Directories \e[0m: $(DIRS)"
 	@echo -e "\e[35mSource Directories\e[0m: $(SRCDIRS)"
@@ -72,7 +74,7 @@ debug:
 help:
 	@echo "The follwing targets may be given..."
 	@echo -e "\t...install"
-	@echo -e "\t...build"
+	@echo -e "\t...build*"
 	@echo -e "\t...test"
 	@echo -e "\t...uninstall"
 	@echo -e "\t...clean"
@@ -80,8 +82,8 @@ help:
 	@echo "Other options"
 	@echo -e "\t...debug"
 	@echo -e "\t...help"
-	@echo -e "\t...generate-config-file"
-	@echo -e "\t...remove-config-file"
+	@echo -e "\t...generate-config-files"
+	@echo -e "\t...remove-config-files"
 .PHONY: help
 
 test: $(buildir)$(prog_name)
@@ -98,15 +100,14 @@ $(buildir)$(prog_name) : build $(srcdir)main.c
 
 $(buildir)%.mk : $(srcdir)%.c
 	@mkdir -p $(@D)
-	@$(CC) -M $< | awk '{ if(/^$(subst .mk,,$(@F))/) { printf("%s%s\n","$(@D)/",$$0) } else { print $$0 } } END { printf("\t$(CC) $(CFLAGS) $(INCLUDES_$(subst /,,$(dir $*))) -c -o $(buildir)$*.o $<\n")}' > $@
-	@echo "Creating Makefile \\"$@\\"..."
+	@$(CC) -M $< | awk '{ if(/^$(subst .mk,,$(@F))/) { printf("%s%s\n","$(@D)/",$$0) } else { print $$0 } } END { printf("\t$(CC) $(CFLAGS) $(INCLUDES_$(subst /,,$(dir $*))) -c -o $(buildir)$*.o $<\n\ttouch $(@D)/timestamp")}' > $@
+	@echo "Creating Makefile \"$@\"..."
 
-.SECONDARY:$(MKS)
-
-%.o: %.mk
-	@mkdir -p $(@D)
-	$(MAKE) $(MAKEFLAGS) -C "$(CURDIR)" -f $<
-	@touch $(@D)/timestamp
+ifneq ($(strip $(filter build build-obj test $(buildir)$(prog_name) $(LIBS) $(OBJS),$(MAKECMDGOALS))),)
+include $(MKS)
+else ifeq ($(MAKECMDGOALS),)
+include $(MKS)
+endif
 
 lib%.a: %/timestamp | $(buildir)
 	$(AR) $(ARFLAGS) $@ $(filter $*/%.o,$(OBJS)) $(if $(CLIBS_$(notdir $*)),-l"$(strip $(CLIBS_$(notdir $*)))")

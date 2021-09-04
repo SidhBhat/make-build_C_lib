@@ -8,9 +8,9 @@ This would represent the structure:
 ==========
 <current directory>
 	|
-	|-<Source directory>
+	|-<srcdir>
 	|	|-<directories (named after the name of library to build)>*
-	|	|	|-<cfiles>*
+	|	|	|-<c files>*
 	|	|
 	|	|-<main.c>
 	|
@@ -47,6 +47,3 @@ INSTALL_DATA
 srcdir
 buildir
 ...etc
-
-
-
