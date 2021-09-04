@@ -4,6 +4,8 @@ Each directory repesents a library.
 
 The file "main.c" in 'Source directory' (srcdir), is used to create a executable linked with the built library to test it.
 
+If The variable 'SHARED' is set to any non zero string the shared libraries are built
+
 This would represent the structure:
 ==========
 <current directory>
@@ -18,7 +20,7 @@ This would represent the structure:
 	|	|-<directories (named after the name of library to build)>*
 	|	|	|-<c object files>*
 	|	|
-	|	|-<static libraries files (named based on directories)>*
+	|	|-<libraries files (named based on directories)>*
 	|	|-<executable prog_name>
 	|
 	|-<Makefile>
@@ -34,7 +36,7 @@ CFLAGS		(defualt '-g -O -Wall')
 AR		(defualt 'ar')
 ARFLAGS		(defualt 'crs')
 #====Install configuration====#
-prefix		(/usr/local)
+prefix		(/usr/local/)
 DESTDIR		(defualt no value)
 #====Program name====#
 prog_name	(defualt 'main.out')

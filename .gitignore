@@ -1,6 +1,7 @@
 #build files
 *.[oa]
 *.out
+*.so
 #build directory
 build/
 #subdirectories of subdirectories of source
