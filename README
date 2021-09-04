@@ -10,18 +10,23 @@ This would represent the structure:
 ==========
 <current directory>
 	|
-	|-<srcdir>
-	|	|-<directories (named after the name of library to build)>*
-	|	|	|-<c files>*
+	|-<Source Directory (srcdir)>
+	|	|-<Library Directories>*
+	|	|	|-<C files>*
+	|	|	|-<Config file (LIBCONFIGFILE)>
 	|	|
-	|	|-<main.c>
+	|	|-<amin.c-files>
+	|	|-<Config file (MAINCONFIG)>
 	|
-	|-<buildir>
-	|	|-<directories (named after the name of library to build)>*
-	|	|	|-<c object files>*
+	|-<Build Directory>
+	|	|-<Library Directories>*
+	|	|	|-<Make files>*
+	|	|	|-<Object Files>*
+	|	|	|-<Timstamp file>
 	|	|
-	|	|-<libraries files (named based on directories)>*
-	|	|-<executable prog_name>
+	|	|-<Library Files (named after Directories)>*
+	|	|-<executable>
+	|	|-<Install timstamp>
 	|
 	|-<Makefile>
 
@@ -33,19 +38,26 @@ To gain additional control over build proccess the following variables can be se
 CC		(defualt 'gcc')
 CLIBS		(defualt no value)
 CFLAGS		(defualt '-g -O -Wall')
+RPATH		(defualt automatically set to location of build (or Install path))
 AR		(defualt 'ar')
 ARFLAGS		(defualt 'crs')
 #====Install configuration====#
 prefix		(/usr/local/)
 DESTDIR		(defualt no value)
 #====Program name====#
-prog_name	(defualt 'main.out')
+prog_name	(defualt 'main')
+#====Other Values====#
+SHARED		(defualt no value (any value tells makefile to create shared libraries))
 #====================#
 
-The following variables are NOT meant to be set from commandline (they have other implications):
-INSTALL
-INTALL_PROGRAM
-INSTALL_DATA
-srcdir
-buildir
-...etc
+These variables must not be modified from commandline (they will be ignored if you try, and defualt value will be used)
+srcdir		(defualt src/)
+buildir		(defualt buld/)
+INSTALL		(defualt 'install -D -p')
+INSTALL_PROGRAM	(defualt 'install -D -p - 755')
+INSTALL_DATA	(defualt 'install -D -p -m 644')
+bindir		(defualt '$(prefix)/bin')
+libdir		(defualt '$(prefix)/lib')
+...
+etc
+
