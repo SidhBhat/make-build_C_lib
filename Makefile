@@ -48,11 +48,7 @@ include $(DEPS)
 build: $(OBJS)
 .PHONY: build
 
-ifeq ($(filter install,$(MAKECMDGOALS)), install)
-install: $(DESTDIR)$(bindir)/$(prog_name) $(prog_name)
-else
 install: $(prog_name)
-endif
 	@for file in $(notdir $(OBJS)); do \
 		[ -f $(DESTDIR)$(libdir)/$$file ] && { \
 			echo -e "\e[35mWarning\e[0m: File already exists at \"$(DESTDIR)$(libdir)/$$file\"..."; \
@@ -94,11 +90,6 @@ ifeq ($(filter install,$(MAKECMDGOALS)), install)
 else
 	$(CC) $(CFLAGS) -Wl,-rpath="$(buildir)" $< $(if $(CLIBS), $(CLIBS), -L./$(buildir) $(addprefix -l,$(subst /,,$(DIRS)))) -o $@
 endif
-
-$(DESTDIR)$(bindir)/$(prog_name): main.c $(OBJS)
-	@mkdir -p $(DESTDIR)$(bindir)
-	$(CC) $(CFLAGS) -Wl,-rpath="$(DESTDIR)$(libdir)" $< $(if $(CLIBS), $(CLIBS), -L./$(buildir) $(addprefix -l,$(subst /,,$(DIRS)))) -o $@
-
 
 #===================================================
 
